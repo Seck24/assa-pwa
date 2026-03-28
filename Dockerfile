@@ -1,18 +1,19 @@
-FROM node:20-alpine AS builder
+FROM node:20-alpine
 WORKDIR /app
+
+# Install deps + build in one layer
 COPY package.json package-lock.json* ./
 RUN npm ci
+
 COPY . .
-ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
-FROM node:20-alpine AS runner
-WORKDIR /app
+# Prepare standalone
+RUN cp -r .next/static .next/standalone/.next/static
+RUN cp -r public .next/standalone/public
+
+WORKDIR /app/.next/standalone
 ENV NODE_ENV=production
 ENV PORT=3000
-ENV NEXT_TELEMETRY_DISABLED=1
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
 EXPOSE 3000
 CMD ["node", "server.js"]
