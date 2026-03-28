@@ -9,11 +9,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
   const [nom, setNom] = useState('')
+  const [ready, setReady] = useState(false)
 
   useEffect(() => {
     const s = getSession()
     if (!s) { router.replace('/login'); return }
     setNom(s.nom_commerce)
+    setReady(true)
     if (pathname !== '/app/activer') {
       checkAccess(s.uid).then(res => {
         if (!res.access_granted) router.replace('/app/activer')
@@ -21,11 +23,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [router, pathname])
 
+  if (!ready) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-10 h-10 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
   const isActiverPage = pathname === '/app/activer'
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Header */}
       {!isActiverPage && (
         <header className="flex items-center justify-between px-4 py-3 glass border-b border-white/5 sticky top-0 z-40">
           <div className="flex items-center gap-2">
@@ -38,12 +47,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </header>
       )}
 
-      {/* Content */}
       <main className={`flex-1 overflow-y-auto ${isActiverPage ? '' : 'pb-20'}`}>
         {children}
       </main>
 
-      {/* Bottom nav */}
       {!isActiverPage && <BottomNav />}
     </div>
   )
