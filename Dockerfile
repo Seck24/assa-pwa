@@ -1,23 +1,18 @@
-# Build 2026-03-28
-FROM node:20-alpine AS deps
-WORKDIR /app
-COPY package.json ./
+# Stage 1: Build React frontend
+FROM node:20-alpine AS frontend
+WORKDIR /app/frontend
+COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm install
-
-FROM node:20-alpine AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY frontend/ ./
 RUN npm run build
 
-FROM node:20-alpine AS runner
+# Stage 2: Python backend + built frontend
+FROM python:3.12-slim
 WORKDIR /app
-ENV NODE_ENV=production
-ENV PORT=3000
-
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
-
-EXPOSE 3000
-CMD ["node", "server.js"]
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY backend/ ./backend/
+COPY --from=frontend /app/frontend/dist ./frontend/dist
+ENV PYTHONPATH=/app
+EXPOSE 8000
+CMD ["python", "-m", "uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
