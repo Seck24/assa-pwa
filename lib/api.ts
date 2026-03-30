@@ -78,10 +78,16 @@ export const deleteServeur = (uid: string, user_uid: string) =>
 
 // SORTIES FRIGO
 export const createSortie = (data: Record<string, unknown>) =>
-  apiPost('/sortie', data);
+  apiPost('/sortie-insert', data);
 
-export const updateSortie = (uid: string, user_uid: string, type: 'retour' | 'encaissement', quantite: number) =>
-  apiPut('/sortie-update', { uid, user_uid, type, quantite });
+export const retourSortie = (user_uid: string, serveur_uid: string, produit_uid: string, quantite: number) =>
+  apiPost('/sortie-update', { user_uid, serveur_uid, produit_uid, quantite });
+
+export const listSortiesService = (user_uid: string) =>
+  apiPost('/list-sorties-service', { user_uid });
+
+export const updateEncaissement = (user_uid: string, serveur_uid: string, produit_uid: string, quantite_encaissee: number) =>
+  apiPost('/sortie-encaissement', { user_uid, serveur_uid, produit_uid, quantite_encaissee });
 
 export const deleteSorties = (user_uid: string) =>
   apiDelete('/delete-sorties', { user_uid });

@@ -5,7 +5,7 @@ import Header from '@/components/Header';
 import Snackbar from '@/components/Snackbar';
 import Spinner from '@/components/Spinner';
 import { getSession } from '@/lib/auth';
-import { listProduits, listServeurs, createVenteBatch, createSortie } from '@/lib/api';
+import { listProduits, listServeurs, createVenteBatch, createSortie, retourSortie } from '@/lib/api';
 import { genererUid, formatFCFA } from '@/lib/utils';
 
 interface Produit {
@@ -55,6 +55,7 @@ export default function VentesPage() {
   const [sortieModal, setSortieModal] = useState<Produit | null>(null);
   const [sortieServeur, setSortieServeur] = useState('');
   const [sortieQte, setSortieQte] = useState(1);
+  const [sortieMode, setSortieMode] = useState<'sortie' | 'retour'>('sortie');
   const [panierOpen, setPanierOpen] = useState(false);
   const [serveurPicker, setServeurPicker] = useState(false);
   const [factureOpen, setFactureOpen] = useState(false);
@@ -106,6 +107,7 @@ export default function VentesPage() {
         setSortieModal(p);
         setSortieServeur(serveurActif?.uid || '');
         setSortieQte(1);
+        setSortieMode('sortie');
       } else {
         // Single tap → vente modal
         setProduitModal(p);
@@ -140,25 +142,25 @@ export default function VentesPage() {
   const handleSortie = async () => {
     if (!sortieModal || !session || !sortieServeur) return;
     const srv = serveurs.find(s => s.uid === sortieServeur);
-    const uid = genererUid();
     try {
-      await createSortie({
-        uid,
-        user_uid: session.user_uid,
-        produit_uid: sortieModal.uid,
-        nom_produit: sortieModal.nom,
-        serveur_uid: sortieServeur,
-        nom_serveur: srv?.nom || '',
-        quantite_sortie: sortieQte,
-      });
-      // Update panier item with sortie_uid
-      setPanier(prev => prev.map(i =>
-        i.produit.uid === sortieModal.uid ? { ...i, sortie_uid: uid } : i
-      ));
+      if (sortieMode === 'sortie') {
+        await createSortie({
+          uid: genererUid(),
+          user_uid: session.user_uid,
+          produit_uid: sortieModal.uid,
+          nom_produit: sortieModal.nom,
+          serveur_uid: sortieServeur,
+          nom_serveur: srv?.nom || '',
+          quantite_sortie: sortieQte,
+        });
+        setSnack({ msg: 'Sortie frigo enregistrée ✓', type: 'success' });
+      } else {
+        await retourSortie(session.user_uid, sortieServeur, sortieModal.uid, sortieQte);
+        setSnack({ msg: 'Retour enregistré ✓', type: 'success' });
+      }
       setSortieModal(null);
-      setSnack({ msg: 'Sortie frigo enregistrée ✓', type: 'success' });
     } catch {
-      setSnack({ msg: 'Erreur lors de la sortie', type: 'error' });
+      setSnack({ msg: `Erreur lors du ${sortieMode === 'retour' ? 'retour' : 'enregistrement'}`, type: 'error' });
     }
   };
 
@@ -315,12 +317,20 @@ export default function VentesPage() {
             )}
 
             {/* Quantity */}
-            <div className="flex items-center justify-center gap-6">
+            <div className="flex items-center justify-center gap-4">
               <button
                 onClick={() => setQteModal(q => Math.max(1, q - 1))}
                 className="w-10 h-10 bg-gray-700 text-white rounded-full text-xl font-bold"
               >−</button>
-              <span className="text-white font-bold text-2xl w-8 text-center">{qteModal}</span>
+              <input
+                type="number"
+                min={1}
+                value={qteModal}
+                onChange={e => setQteModal(Math.max(1, parseInt(e.target.value) || 1))}
+                onFocus={e => e.target.select()}
+                className="w-16 text-center bg-gray-800 text-white font-bold text-2xl rounded-xl py-1 border border-gray-600"
+                inputMode="numeric"
+              />
               <button
                 onClick={() => setQteModal(q => q + 1)}
                 className="w-10 h-10 bg-assa-green text-white rounded-full text-xl font-bold"
@@ -342,7 +352,19 @@ export default function VentesPage() {
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/60" onClick={() => setSortieModal(null)} />
           <div className="relative bg-gray-900 rounded-t-3xl p-6 space-y-4">
-            <h2 className="text-white font-bold text-xl text-center">Sortie Frigo — {sortieModal.nom}</h2>
+            <h2 className="text-white font-bold text-xl text-center">{sortieModal.nom}</h2>
+
+            {/* Onglets Sortie / Retour */}
+            <div className="flex rounded-xl overflow-hidden border border-gray-700">
+              <button
+                onClick={() => setSortieMode('sortie')}
+                className={`flex-1 py-2 text-sm font-bold ${sortieMode === 'sortie' ? 'bg-assa-green text-white' : 'bg-gray-800 text-gray-400'}`}
+              >Sortie Frigo</button>
+              <button
+                onClick={() => setSortieMode('retour')}
+                className={`flex-1 py-2 text-sm font-bold ${sortieMode === 'retour' ? 'bg-orange-500 text-white' : 'bg-gray-800 text-gray-400'}`}
+              >Retour</button>
+            </div>
 
             <select
               value={sortieServeur}
@@ -355,14 +377,25 @@ export default function VentesPage() {
               ))}
             </select>
 
-            <div className="flex items-center justify-center gap-6">
+            <div className="flex items-center justify-center gap-4">
               <button onClick={() => setSortieQte(q => Math.max(1, q - 1))} className="w-10 h-10 bg-gray-700 text-white rounded-full text-xl font-bold">−</button>
-              <span className="text-white font-bold text-2xl w-8 text-center">{sortieQte}</span>
+              <input
+                type="number"
+                min={1}
+                value={sortieQte}
+                onChange={e => setSortieQte(Math.max(1, parseInt(e.target.value) || 1))}
+                onFocus={e => e.target.select()}
+                className="w-16 text-center bg-gray-800 text-white font-bold text-2xl rounded-xl py-1 border border-gray-600"
+                inputMode="numeric"
+              />
               <button onClick={() => setSortieQte(q => q + 1)} className="w-10 h-10 bg-assa-green text-white rounded-full text-xl font-bold">+</button>
             </div>
 
-            <button onClick={handleSortie} className="w-full bg-assa-green text-white font-bold py-4 rounded-2xl text-base">
-              Enregistrer la sortie
+            <button
+              onClick={handleSortie}
+              className={`w-full text-white font-bold py-4 rounded-2xl text-base ${sortieMode === 'retour' ? 'bg-orange-500' : 'bg-assa-green'}`}
+            >
+              {sortieMode === 'retour' ? 'Enregistrer le retour' : 'Enregistrer la sortie'}
             </button>
           </div>
         </div>
