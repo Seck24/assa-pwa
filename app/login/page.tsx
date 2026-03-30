@@ -34,22 +34,39 @@ export default function LoginPage() {
         return;
       }
 
-      const accessRes = await checkAccess(res.user_uid);
+      // API returns 'uid' field (not 'user_uid')
+      const userUid = res.uid || res.user_uid;
+
+      // check-access is optional — skip if not available
+      let accountStatus: 'essai' | 'actif' | 'suspendu' = 'actif';
+      let trialDays = 0;
+      let blocked = false;
+      try {
+        const accessRes = await checkAccess(userUid);
+        if (accessRes.access_granted === false) {
+          blocked = true;
+        }
+        accountStatus = accessRes.account_status || 'actif';
+        trialDays = accessRes.trial_remaining_days || 0;
+      } catch {
+        // check-access not available, assume active
+      }
+
       setSession({
-        user_uid: res.user_uid,
-        telephone: res.telephone,
-        nom_commerce: res.nom_commerce,
-        account_status: accessRes.access_granted ? (accessRes.account_status || 'actif') : 'suspendu',
-        trial_remaining_days: accessRes.trial_remaining_days || 0,
+        user_uid: userUid,
+        telephone: fullTel,
+        nom_commerce: res.nom_commerce || '',
+        account_status: accountStatus,
+        trial_remaining_days: trialDays,
       });
 
-      if (!accessRes.access_granted) {
+      if (blocked) {
         router.replace('/bloque');
       } else {
         router.replace('/');
       }
     } catch {
-      setSnack({ msg: 'Erreur de connexion. Vérifie ta connexion internet.', type: 'error' });
+      setSnack({ msg: 'Identifiants incorrects ou erreur serveur.', type: 'error' });
     } finally {
       setLoading(false);
     }
