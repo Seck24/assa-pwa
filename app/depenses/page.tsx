@@ -5,7 +5,7 @@ import Header from '@/components/Header';
 import Snackbar from '@/components/Snackbar';
 import { getSession } from '@/lib/auth';
 import { createDepense } from '@/lib/api';
-import { genererUid, todayISO } from '@/lib/utils';
+import { todayISO } from '@/lib/utils';
 
 const CATEGORIES = [
   'Loyer', 'Transport', 'Électricité/Eau', 'Téléphone/Internet',
@@ -41,7 +41,6 @@ export default function DepensesPage() {
     setSaving(true);
     try {
       await createDepense({
-        uid: genererUid(),
         user_uid: session.user_uid,
         categorie,
         description,
@@ -68,17 +67,17 @@ export default function DepensesPage() {
 
       <div className="flex-1 px-4 pt-4 space-y-4 pb-8">
         {/* Date */}
-        <div className="flex items-center gap-3">
-          <span className="text-white font-medium">
-            {date === today ? "Aujourd'hui" : new Date(date).toLocaleDateString('fr-FR')}
-          </span>
+        <div className="relative flex items-center gap-3 bg-gray-900 border border-assa-green rounded-2xl px-4 py-3">
           <span className="text-xl">📅</span>
+          <span className="text-white font-medium flex-1">
+            {date === today ? "Aujourd'hui" : new Date(date + 'T00:00:00').toLocaleDateString('fr-FR')}
+          </span>
           <input
             type="date"
             value={date}
             max={today}
             onChange={e => setDate(e.target.value)}
-            className="bg-transparent text-white border-0 opacity-0 absolute w-8 h-8 cursor-pointer"
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
         </div>
 
