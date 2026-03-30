@@ -122,16 +122,6 @@ export default function LoginPage() {
           {loading ? <Spinner size="sm" /> : 'Se connecter'}
         </button>
 
-        {/* Mot de passe oublié */}
-        <div className="text-center">
-          <button
-            type="button"
-            onClick={() => router.push('/login/reset')}
-            className="text-gray-400 text-sm underline"
-          >
-            Mot de passe oublié ?
-          </button>
-        </div>
       </form>
 
       {snack && (
