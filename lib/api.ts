@@ -57,7 +57,7 @@ export const listVentes = (user_uid: string, date_debut: string, date_fin: strin
 
 // DÉPENSES
 export const createDepense = (data: Record<string, unknown>) =>
-  apiPost('/depense', data);
+  apiPost('/insert-depense', data);
 
 export const listDepenses = (user_uid: string, date_debut: string, date_fin: string) =>
   apiPost('/list-depenses', { user_uid, date_debut, date_fin });
