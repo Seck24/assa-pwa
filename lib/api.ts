@@ -39,6 +39,12 @@ export const createProduit = (data: Record<string, unknown>) =>
 export const updateProduit = (data: Record<string, unknown>) =>
   apiPost('/produit-update', data);
 
+export const enregistrerLivraison = (uid: string, user_uid: string, total_unites: number) =>
+  apiPost('/enregistrer-livraison', { uid, user_uid, total_unites });
+
+export const enregistrerInventaire = (uid: string, user_uid: string, stock_actuel: number) =>
+  apiPost('/enregistrer-inventaire', { uid, user_uid, stock_actuel });
+
 export const deleteProduit = (uid: string, user_uid: string) =>
   apiPost('/delete-produit', { uid, user_uid });
 

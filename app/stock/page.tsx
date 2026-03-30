@@ -5,7 +5,7 @@ import Header from '@/components/Header';
 import Snackbar from '@/components/Snackbar';
 import Spinner from '@/components/Spinner';
 import { getSession } from '@/lib/auth';
-import { listProduits, createProduit, updateProduit, deleteProduit } from '@/lib/api';
+import { listProduits, createProduit, updateProduit, deleteProduit, enregistrerLivraison, enregistrerInventaire } from '@/lib/api';
 import { genererUid } from '@/lib/utils';
 
 interface Produit {
@@ -126,20 +126,9 @@ export default function StockPage() {
     if (!session || !selected || !livQte) return;
     setSaving(true);
     try {
-      const newStock = selected.stock_actuel + parseInt(livQte);
-      await updateProduit({
-        uid: selected.uid,
-        user_uid: session.user_uid,
-        nom: selected.nom,
-        stock_actuel: newStock,
-        prix_vente_defaut: selected.prix_vente_defaut,
-        seuil_alerte: selected.seuil_alerte,
-        unite: selected.unite,
-        couleur_icone: selected.couleur_icone,
-        categorie_boisson: selected.categorie_boisson,
-      });
+      await enregistrerLivraison(selected.uid, session.user_uid, parseInt(livQte));
       setModal(null);
-      setSnack({ msg: 'Stock mis à jour ✓', type: 'success' });
+      setSnack({ msg: 'Livraison enregistrée ✓', type: 'success' });
       await loadProduits();
     } catch {
       setSnack({ msg: 'Erreur', type: 'error' });
@@ -152,17 +141,7 @@ export default function StockPage() {
     if (!session || !selected || !invQte) return;
     setSaving(true);
     try {
-      await updateProduit({
-        uid: selected.uid,
-        user_uid: session.user_uid,
-        nom: selected.nom,
-        stock_actuel: parseInt(invQte),
-        prix_vente_defaut: selected.prix_vente_defaut,
-        seuil_alerte: selected.seuil_alerte,
-        unite: selected.unite,
-        couleur_icone: selected.couleur_icone,
-        categorie_boisson: selected.categorie_boisson,
-      });
+      await enregistrerInventaire(selected.uid, session.user_uid, parseInt(invQte));
       setModal(null);
       setSnack({ msg: 'Inventaire mis à jour ✓', type: 'success' });
       await loadProduits();
