@@ -1,7 +1,6 @@
-const BASE_URL = 'https://automation.preo-ia.info/webhook';
-
+// All API calls go through /api/proxy to avoid CORS issues
 async function apiPost(endpoint: string, data: Record<string, unknown>) {
-  const res = await fetch(`${BASE_URL}${endpoint}`, {
+  const res = await fetch(`/api/proxy?endpoint=${encodeURIComponent(endpoint)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -11,7 +10,7 @@ async function apiPost(endpoint: string, data: Record<string, unknown>) {
 }
 
 async function apiPut(endpoint: string, data: Record<string, unknown>) {
-  const res = await fetch(`${BASE_URL}${endpoint}`, {
+  const res = await fetch(`/api/proxy?endpoint=${encodeURIComponent(endpoint)}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -21,7 +20,7 @@ async function apiPut(endpoint: string, data: Record<string, unknown>) {
 }
 
 async function apiDelete(endpoint: string, data: Record<string, unknown>) {
-  const res = await fetch(`${BASE_URL}${endpoint}`, {
+  const res = await fetch(`/api/proxy?endpoint=${encodeURIComponent(endpoint)}`, {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
