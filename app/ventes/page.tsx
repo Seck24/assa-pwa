@@ -276,9 +276,8 @@ export default function VentesPage() {
       </div>
 
       {/* Bottom bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-30">
-        {/* Service + Factures */}
-        <div className="flex gap-3 px-4 pb-2">
+      <div className="fixed bottom-0 left-0 right-0 z-30 px-4 pb-4 space-y-2">
+        <div className="flex gap-3">
           <button
             onClick={() => router.push('/bilan-service')}
             className="flex-1 bg-gray-800 text-white font-bold py-3 rounded-2xl text-sm"
@@ -287,25 +286,16 @@ export default function VentesPage() {
           </button>
           <button
             onClick={() => setFactureOpen(true)}
-            className="flex-1 bg-assa-green text-white font-bold py-3 rounded-2xl text-sm"
+            className="flex-1 bg-gray-800 text-white font-bold py-3 rounded-2xl text-sm"
           >
             Factures Enrg.
           </button>
         </div>
-        {/* Cart bar */}
         <button
-          onClick={() => setPanierOpen(true)}
-          className="flex items-center gap-2 px-4 pb-4 w-full"
+          onClick={() => setFactureOpen(true)}
+          className="w-full bg-assa-green text-white font-bold py-4 rounded-2xl text-base"
         >
-          <div className="w-10 h-10 bg-teal-700 rounded-xl flex items-center justify-center text-lg">
-            🛒
-          </div>
-          <div className="flex-1 bg-assa-green text-white font-bold py-2 rounded-xl text-sm text-center">
-            {panier.reduce((s, i) => s + i.quantite, 0)} produit(s)
-          </div>
-          <div className="flex-1 bg-teal-700 text-white font-bold py-2 rounded-xl text-sm text-center">
-            {totalPanier} FCFA
-          </div>
+          Facture — {panier.reduce((s, i) => s + i.quantite, 0)} produit(s) · {formatFCFA(totalPanier)}
         </button>
       </div>
 
@@ -465,16 +455,20 @@ export default function VentesPage() {
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/60" onClick={() => setFactureOpen(false)} />
           <div className="relative bg-gray-900 rounded-t-3xl p-6 max-h-[85vh] overflow-y-auto">
-            <h2 className="text-white font-bold text-xl text-center mb-2">Facture</h2>
-            <p className="text-blue-300 font-bold text-sm text-right mb-4">👤 {serveurActif?.nom}</p>
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-white font-bold text-xl">Facture</h2>
+              <span className="text-blue-300 font-bold text-sm">👤 {serveurActif?.nom}</span>
+            </div>
+            <div className="h-px bg-gray-700 mb-4" />
             {panier.length === 0 ? (
               <p className="text-gray-400 text-center py-8">Aucun article</p>
             ) : (
               <div className="space-y-2 mb-4">
                 {panier.map((item, i) => (
-                  <div key={i} className="flex justify-between text-white text-sm">
-                    <span>{item.produit.nom} × {item.quantite}</span>
-                    <span>{formatFCFA(item.prix * item.quantite)}</span>
+                  <div key={i} className="flex items-center justify-between text-white text-sm">
+                    <span className="flex-1">{item.produit.nom} × {item.quantite}</span>
+                    <span className="font-bold mr-3">{formatFCFA(item.prix * item.quantite)}</span>
+                    <button onClick={() => setPanier(p => p.filter((_, j) => j !== i))} className="text-red-400 text-base">✕</button>
                   </div>
                 ))}
               </div>
