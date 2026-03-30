@@ -10,15 +10,18 @@ const config: Config = {
     extend: {
       colors: {
         assa: {
-          bg: '#060F08',
-          green: '#00A650',
-          'green-dark': '#008A42',
-          card: '#1A0A0A',
-          'card-border': '#3D1A1A',
-          teal: '#00B4B4',
-          gray: '#2A2A2A',
-          'gray-light': '#888888',
+          bg: '#0d1420',
+          green: '#00e676',
+          'green-dark': '#00c853',
+          card: 'rgba(255,255,255,0.04)',
+          'card-border': 'rgba(255,255,255,0.08)',
+          teal: '#00e5ff',
+          gray: 'rgba(255,255,255,0.06)',
+          'gray-light': 'rgba(255,255,255,0.4)',
         },
+      },
+      backdropBlur: {
+        glass: '20px',
       },
     },
   },

@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --assa-bg: #060F08;
-  --assa-green: #00A650;
+  --assa-bg: #0d1420;
+  --assa-green: #00e676;
 }
 
 * {
@@ -13,7 +13,12 @@
 }
 
 html, body {
-  background-color: #060F08;
+  background-color: #0d1420;
+  background-image:
+    radial-gradient(ellipse at 20% 20%, rgba(0, 230, 118, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(80, 40, 180, 0.08) 0%, transparent 50%),
+    linear-gradient(145deg, #0d1420 0%, #111830 50%, #0d1420 100%);
+  background-attachment: fixed;
   color: white;
   font-family: Arial, Helvetica, sans-serif;
   min-height: 100vh;
@@ -34,4 +39,70 @@ input:focus, select:focus, textarea:focus {
 /* Safe area for mobile */
 .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Glass card utility */
+.glass-card {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+}
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 10%; right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  pointer-events: none;
+}
+
+/* Glass input */
+.glass-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 230, 118, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Upgrade gray cards to glass across all pages */
+.bg-gray-900 {
+  background: rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-color: rgba(255, 255, 255, 0.07) !important;
+}
+.bg-gray-800 {
+  background: rgba(255, 255, 255, 0.07) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.bg-gray-700 {
+  background: rgba(255, 255, 255, 0.10) !important;
+}
+.border-gray-800 {
+  border-color: rgba(255, 255, 255, 0.07) !important;
+}
+.border-gray-700 {
+  border-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+/* Green glow on primary buttons */
+.bg-assa-green {
+  box-shadow: 0 4px 20px rgba(0, 230, 118, 0.25);
+}
+.bg-assa-green:active {
+  box-shadow: 0 2px 10px rgba(0, 230, 118, 0.2);
+}
+
+/* Shimmer top edge on cards */
+.shimmer-top::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 8%; right: 8%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  pointer-events: none;
+  border-radius: 1px;
 }
