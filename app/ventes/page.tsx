@@ -168,6 +168,21 @@ export default function VentesPage() {
     if (!session || panier.length === 0) return;
     setValidating(true);
     try {
+      // Ensure a sortie row exists for each product (creates one with qty=0 if absent)
+      // so the bilan shows the product even without a prior sortie frigo
+      if (serveurActif) {
+        await Promise.all(panier.map(item =>
+          createSortie({
+            uid: genererUid(),
+            user_uid: session.user_uid,
+            produit_uid: item.produit.uid,
+            nom_produit: item.produit.nom,
+            serveur_uid: serveurActif.uid,
+            nom_serveur: serveurActif.nom,
+            quantite_sortie: 0,
+          })
+        ));
+      }
       await createVenteBatch({
         user_uid: session.user_uid,
         session_uid: genererUid(),
