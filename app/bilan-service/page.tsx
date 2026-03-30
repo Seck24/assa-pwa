@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSession } from '@/lib/auth';
-import { listSortiesService, updateEncaissement, deleteSorties } from '@/lib/api';
+import { listSortiesService, deleteSorties } from '@/lib/api';
 import Spinner from '@/components/Spinner';
 import Snackbar from '@/components/Snackbar';
 
@@ -23,10 +23,8 @@ export default function BilanServicePage() {
   const [sorties, setSorties] = useState<Sortie[]>([]);
   const [filtre, setFiltre] = useState<string>('tous');
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [cloturant, setCloturant] = useState(false);
-  const [encEdits, setEncEdits] = useState<Record<string, number>>({});
   const [snack, setSnack] = useState<{ msg: string; type: 'success' | 'error' | 'warning' } | null>(null);
 
   useEffect(() => {
@@ -41,12 +39,6 @@ export default function BilanServicePage() {
       const res = await listSortiesService(session.user_uid);
       const data: Sortie[] = res?.[0]?.sorties || res?.sorties || [];
       setSorties(data);
-      // Init encEdits from DB values
-      const edits: Record<string, number> = {};
-      data.forEach(s => {
-        edits[`${s.produit_uid}-${s.serveur_uid}`] = s.quantite_encaissee;
-      });
-      setEncEdits(edits);
     } catch {
       setSnack({ msg: 'Erreur de chargement', type: 'error' });
     } finally {
@@ -54,37 +46,26 @@ export default function BilanServicePage() {
     }
   };
 
-  // Collect unique servers from sorties
+  // Unique serveurs from sorties data
   const serveurs = Array.from(
     new Map(sorties.map(s => [s.serveur_uid, s.nom_serveur])).entries()
   ).map(([uid, nom]) => ({ uid, nom }));
 
-  const sortiesFiltrees = filtre === 'tous'
-    ? sorties
-    : sorties.filter(s => s.serveur_uid === filtre);
+  // Sorties filtered by current tab
+  const sortiesFiltrees = filtre === 'tous' ? sorties : sorties.filter(s => s.serveur_uid === filtre);
 
-  const handleEncChange = (key: string, val: number) => {
-    setEncEdits(prev => ({ ...prev, [key]: Math.max(0, val) }));
-  };
+  // Group by serveur for display
+  const parServeur = serveurs
+    .filter(srv => filtre === 'tous' || srv.uid === filtre)
+    .map(srv => ({
+      ...srv,
+      lignes: sortiesFiltrees.filter(s => s.serveur_uid === srv.uid),
+    }));
 
-  const handleSaveEnc = async (s: Sortie) => {
-    if (!session) return;
-    const key = `${s.produit_uid}-${s.serveur_uid}`;
-    const val = encEdits[key] ?? s.quantite_encaissee;
-    setSaving(key);
-    try {
-      await updateEncaissement(session.user_uid, s.serveur_uid, s.produit_uid, val);
-      setSorties(prev => prev.map(x =>
-        x.produit_uid === s.produit_uid && x.serveur_uid === s.serveur_uid
-          ? { ...x, quantite_encaissee: val }
-          : x
-      ));
-      setSnack({ msg: 'Encaissement mis à jour ✓', type: 'success' });
-    } catch {
-      setSnack({ msg: 'Erreur (workflow non activé ?)', type: 'error' });
-    } finally {
-      setSaving(null);
-    }
+  const ecartColor = (ecart: number) => {
+    if (ecart < 0) return 'text-blue-400';
+    if (ecart === 0) return 'text-assa-green';
+    return 'text-red-500';
   };
 
   const handleCloturer = async () => {
@@ -102,12 +83,6 @@ export default function BilanServicePage() {
     }
   };
 
-  const ecartColor = (ecart: number) => {
-    if (ecart < 0) return 'text-blue-400';
-    if (ecart === 0) return 'text-assa-green';
-    return 'text-red-500';
-  };
-
   if (!session) return null;
 
   return (
@@ -118,10 +93,9 @@ export default function BilanServicePage() {
         <h1 className="text-white font-bold text-lg uppercase tracking-wider">Bilan du Service</h1>
       </div>
 
-      <div className="flex-1 px-4 pt-4 pb-24">
+      <div className="flex-1 px-4 pt-4 pb-28">
         {/* Filtre serveurs */}
         <div className="mb-4">
-          <p className="text-gray-400 text-sm mb-2 text-center">Filtrer par serveur</p>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setFiltre('tous')}
@@ -141,91 +115,59 @@ export default function BilanServicePage() {
           </div>
         </div>
 
-        {/* Légende couleurs */}
-        <div className="flex gap-4 text-xs mb-3">
-          <span className="text-assa-green">● Écart = 0</span>
-          <span className="text-blue-400">● Écart &lt; 0 (ok)</span>
-          <span className="text-red-500">● Écart &gt; 0 (problème)</span>
+        {/* Légende */}
+        <div className="flex gap-4 text-xs mb-4">
+          <span className="text-assa-green">● 0 = parfait</span>
+          <span className="text-blue-400">● négatif = ok</span>
+          <span className="text-red-500">● positif = problème</span>
         </div>
 
-        {/* Tableau */}
         {loading ? (
           <div className="flex justify-center pt-12"><Spinner size="lg" /></div>
-        ) : sortiesFiltrees.length === 0 ? (
-          <p className="text-gray-400 text-center py-12">Aucune donnée pour ce service</p>
+        ) : sorties.length === 0 ? (
+          <p className="text-gray-400 text-center py-12">Aucune sortie enregistrée pour ce service</p>
         ) : (
-          <div className="space-y-3">
-            {sortiesFiltrees.map((s) => {
-              const key = `${s.produit_uid}-${s.serveur_uid}`;
-              const sortieNette = s.quantite_sortie - s.quantite_retour;
-              const encVal = encEdits[key] ?? s.quantite_encaissee;
-              const ecart = sortieNette - encVal;
-              const changed = encVal !== s.quantite_encaissee;
-
-              return (
-                <div key={key} className="bg-gray-900 rounded-2xl p-4 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-white font-bold">{s.nom_produit}</span>
-                    <span className="text-gray-400 text-xs">{s.nom_serveur}</span>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2 text-center text-xs text-gray-400">
-                    <span>Sortie nette</span>
-                    <span>Encaissée</span>
-                    <span>Écart</span>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2 items-center">
-                    {/* Sortie nette */}
-                    <div className="text-center">
-                      <span className="text-white font-bold text-xl">{sortieNette}</span>
-                      {s.quantite_retour > 0 && (
-                        <p className="text-gray-500 text-xs">{s.quantite_sortie} − {s.quantite_retour}</p>
-                      )}
-                    </div>
-
-                    {/* Encaissée éditable */}
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => handleEncChange(key, encVal - 1)}
-                        className="w-7 h-7 bg-gray-700 text-white rounded-full text-sm font-bold"
-                      >−</button>
-                      <input
-                        type="number"
-                        min={0}
-                        value={encVal}
-                        onChange={e => handleEncChange(key, parseInt(e.target.value) || 0)}
-                        onFocus={e => e.target.select()}
-                        className="w-12 text-center bg-gray-800 text-white font-bold text-lg rounded-lg py-0.5 border border-gray-600"
-                        inputMode="numeric"
-                      />
-                      <button
-                        onClick={() => handleEncChange(key, encVal + 1)}
-                        className="w-7 h-7 bg-assa-green text-white rounded-full text-sm font-bold"
-                      >+</button>
-                    </div>
-
-                    {/* Écart */}
-                    <div className="text-center">
-                      <span className={`font-bold text-xl ${ecartColor(ecart)}`}>
-                        {ecart > 0 ? `+${ecart}` : ecart}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Bouton save si modifié */}
-                  {changed && (
-                    <button
-                      onClick={() => handleSaveEnc(s)}
-                      disabled={saving === key}
-                      className="w-full bg-assa-green text-white font-bold py-2 rounded-xl text-sm flex items-center justify-center gap-2 disabled:opacity-60"
-                    >
-                      {saving === key ? <Spinner size="sm" /> : 'Enregistrer'}
-                    </button>
-                  )}
+          <div className="space-y-6">
+            {parServeur.map(srv => (
+              <div key={srv.uid}>
+                {/* Titre serveur */}
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-assa-green font-bold text-base">👤 {srv.nom}</span>
+                  <div className="flex-1 h-px bg-gray-700" />
                 </div>
-              );
-            })}
+
+                {/* En-tête tableau */}
+                <div className="grid grid-cols-4 text-gray-400 text-xs px-2 mb-1">
+                  <span>Produit</span>
+                  <span className="text-center">Sortie</span>
+                  <span className="text-center">Enc.</span>
+                  <span className="text-center">Écart</span>
+                </div>
+
+                {/* Lignes */}
+                <div className="space-y-1">
+                  {srv.lignes.map(s => {
+                    const sortieNette = s.quantite_sortie - s.quantite_retour;
+                    const ecart = sortieNette - s.quantite_encaissee;
+                    return (
+                      <div key={s.uid} className="grid grid-cols-4 items-center bg-gray-900 rounded-xl px-3 py-3">
+                        <span className="text-white text-sm font-medium">{s.nom_produit}</span>
+                        <div className="text-center">
+                          <span className="text-white font-bold">{sortieNette}</span>
+                          {s.quantite_retour > 0 && (
+                            <p className="text-gray-500 text-xs">{s.quantite_sortie}−{s.quantite_retour}</p>
+                          )}
+                        </div>
+                        <span className="text-center text-white font-bold">{s.quantite_encaissee}</span>
+                        <span className={`text-center font-bold text-lg ${ecartColor(ecart)}`}>
+                          {ecart > 0 ? `+${ecart}` : ecart}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
