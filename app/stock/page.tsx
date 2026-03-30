@@ -242,7 +242,9 @@ export default function StockPage() {
               className="flex items-center justify-between bg-gray-900 border border-assa-green rounded-2xl px-4 py-3 cursor-pointer active:scale-98 transition-transform"
             >
               <div className="flex items-center gap-3">
-                <span className="text-2xl" style={{ color: p.couleur_icone || '#00A650' }}>🍾</span>
+                <span className="text-2xl">
+                  {p.categorie_boisson === 'Soft' ? '🥤' : '🍾'}
+                </span>
                 <div>
                   <p className="text-white font-bold text-base">{p.nom}</p>
                   <p className="text-assa-green text-xs">Inv. {p.seuil_alerte} j</p>
