@@ -9,16 +9,6 @@ async function apiPost(endpoint: string, data: Record<string, unknown>) {
   return res.json();
 }
 
-async function apiPut(endpoint: string, data: Record<string, unknown>) {
-  const res = await fetch(`/api/proxy?endpoint=${encodeURIComponent(endpoint)}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error(`Erreur réseau: ${res.status}`);
-  return res.json();
-}
-
 async function apiDelete(endpoint: string, data: Record<string, unknown>) {
   const res = await fetch(`/api/proxy?endpoint=${encodeURIComponent(endpoint)}`, {
     method: 'DELETE',
@@ -47,10 +37,10 @@ export const createProduit = (data: Record<string, unknown>) =>
   apiPost('/produit-create', data);
 
 export const updateProduit = (data: Record<string, unknown>) =>
-  apiPut('/produit-update', data);
+  apiPost('/produit-update', data);
 
 export const deleteProduit = (uid: string, user_uid: string) =>
-  apiDelete('/delete-produit', { uid, user_uid });
+  apiPost('/delete-produit', { uid, user_uid });
 
 // VENTES
 export const createVenteBatch = (data: Record<string, unknown>) =>
@@ -74,7 +64,7 @@ export const createServeur = (uid: string, user_uid: string, nom: string) =>
   apiPost('/create-serveur', { uid, user_uid, nom });
 
 export const deleteServeur = (uid: string, user_uid: string) =>
-  apiDelete('/delete-serveur', { uid, user_uid });
+  apiPost('/delete-serveur', { uid, user_uid });
 
 // SORTIES FRIGO
 export const createSortie = (data: Record<string, unknown>) =>
@@ -86,18 +76,15 @@ export const retourSortie = (user_uid: string, serveur_uid: string, produit_uid:
 export const listSortiesService = (user_uid: string) =>
   apiPost('/list-sorties-service', { user_uid });
 
-export const updateEncaissement = (user_uid: string, serveur_uid: string, produit_uid: string, quantite_encaissee: number) =>
-  apiPost('/sortie-encaissement', { user_uid, serveur_uid, produit_uid, quantite_encaissee });
-
 export const deleteSorties = (user_uid: string) =>
-  apiDelete('/delete-sorties', { user_uid });
+  apiPost('/delete-sorties', { user_uid });
 
 // RAPPELS
 export const listRappels = (user_uid: string) =>
   apiPost('/list-rappels', { user_uid });
 
 export const createRappel = (uid: string, user_uid: string, titre: string, date_limite: string) =>
-  apiPost('/rappel', { uid, user_uid, titre, date_limite });
+  apiPost('/create-rappel', { uid, user_uid, titre, date_limite });
 
 export const deleteRappel = (uid: string, user_uid: string) =>
-  apiDelete('/rappel', { uid, user_uid });
+  apiDelete('/delete-rappel', { uid, user_uid });
