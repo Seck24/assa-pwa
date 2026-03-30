@@ -190,8 +190,11 @@ export default function VentesPage() {
       setPanierOpen(false);
       setSnack({ msg: 'Vente enregistrée ✓', type: 'success' });
       await loadData();
-    } catch {
-      setSnack({ msg: 'Erreur lors de la validation', type: 'error' });
+    } catch (err: unknown) {
+      const msg = err instanceof Error && err.message.includes('404')
+        ? 'Workflow vente non activé dans n8n'
+        : 'Erreur lors de la validation';
+      setSnack({ msg, type: 'error' });
     } finally {
       setValidating(false);
     }
@@ -207,10 +210,10 @@ export default function VentesPage() {
       <div className="px-4 pt-4">
         <button
           onClick={() => setServeurPicker(true)}
-          className="w-full bg-assa-green text-white font-bold py-3 px-6 rounded-full flex items-center gap-2 text-base"
+          className="w-full bg-assa-green font-bold py-3 px-6 rounded-full flex items-center gap-2 text-base"
         >
-          <span>👤</span>
-          <span>{serveurActif?.nom || 'Choisir un serveur'}</span>
+          <span className="text-white">👤</span>
+          <span className="text-blue-200 font-bold text-lg">{serveurActif?.nom || 'Choisir un serveur'}</span>
         </button>
       </div>
 
@@ -426,7 +429,7 @@ export default function VentesPage() {
           <div className="absolute inset-0 bg-black/60" onClick={() => setFactureOpen(false)} />
           <div className="relative bg-gray-900 rounded-t-3xl p-6 max-h-[85vh] overflow-y-auto">
             <h2 className="text-white font-bold text-xl text-center mb-2">Facture</h2>
-            <p className="text-gray-400 text-sm text-right mb-4">{serveurActif?.nom}</p>
+            <p className="text-blue-300 font-bold text-sm text-right mb-4">👤 {serveurActif?.nom}</p>
             {panier.length === 0 ? (
               <p className="text-gray-400 text-center py-8">Aucun article</p>
             ) : (
