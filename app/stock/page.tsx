@@ -247,7 +247,7 @@ export default function StockPage() {
                 </span>
                 <div>
                   <p className="text-white font-bold text-base">{p.nom}</p>
-                  <p className="text-assa-green text-xs">Inv. {p.seuil_alerte} j</p>
+                  <p className="text-assa-green text-xs">Seuil : {p.seuil_alerte}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
