@@ -53,15 +53,15 @@ export const deleteProduit = (uid: string, user_uid: string) =>
   apiDelete('/delete-produit', { uid, user_uid });
 
 // VENTES
-export const createVente = (data: Record<string, unknown>) =>
-  apiPost('/vente', data);
+export const createVenteBatch = (data: Record<string, unknown>) =>
+  apiPost('/vente-batch', data);
 
 export const listVentes = (user_uid: string, date_debut: string, date_fin: string) =>
   apiPost('/list-ventes', { user_uid, date_debut, date_fin });
 
 // DÉPENSES
 export const createDepense = (data: Record<string, unknown>) =>
-  apiPost('/insert-depense', data);
+  apiPost('/depense', data);
 
 export const listDepenses = (user_uid: string, date_debut: string, date_fin: string) =>
   apiPost('/list-depenses', { user_uid, date_debut, date_fin });
@@ -91,7 +91,7 @@ export const listRappels = (user_uid: string) =>
   apiPost('/list-rappels', { user_uid });
 
 export const createRappel = (uid: string, user_uid: string, titre: string, date_limite: string) =>
-  apiPost('/create-rappel', { uid, user_uid, titre, date_limite });
+  apiPost('/rappel', { uid, user_uid, titre, date_limite });
 
 export const deleteRappel = (uid: string, user_uid: string) =>
-  apiDelete('/delete-rappel', { uid, user_uid });
+  apiDelete('/rappel', { uid, user_uid });

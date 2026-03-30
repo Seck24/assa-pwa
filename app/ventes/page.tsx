@@ -5,7 +5,7 @@ import Header from '@/components/Header';
 import Snackbar from '@/components/Snackbar';
 import Spinner from '@/components/Spinner';
 import { getSession } from '@/lib/auth';
-import { listProduits, listServeurs, createVente, createSortie, updateSortie } from '@/lib/api';
+import { listProduits, listServeurs, createVenteBatch, createSortie } from '@/lib/api';
 import { genererUid, formatFCFA } from '@/lib/utils';
 
 interface Produit {
@@ -165,36 +165,25 @@ export default function VentesPage() {
   const validerPanier = async () => {
     if (!session || panier.length === 0) return;
     setValidating(true);
-    const session_uid = genererUid();
     try {
-      for (const item of panier) {
-        await createVente({
-          uid: genererUid(),
-          user_uid: session.user_uid,
-          session_uid,
-          nom_affiche: item.produit.nom,
-          prix_unitaire: item.prix,
-          quantite: item.quantite,
-          sous_total: item.prix * item.quantite,
+      await createVenteBatch({
+        user_uid: session.user_uid,
+        session_uid: genererUid(),
+        serveur_uid: serveurActif?.uid || '',
+        nom_serveur: serveurActif?.nom || '',
+        lignes: panier.map(item => ({
           ref_produit_uid: item.produit.uid,
-          a_formule: item.modeFormule,
-          serveur_uid: serveurActif?.uid || '',
-          nom_serveur: serveurActif?.nom || '',
-        });
-        if (item.sortie_uid) {
-          await updateSortie(item.sortie_uid, session.user_uid, 'encaissement', item.quantite);
-        }
-      }
+          quantite: item.quantite,
+          mode_vente: item.modeFormule ? 'formule' : 'normal',
+        })),
+      });
       setPanier([]);
       setFactureOpen(false);
       setPanierOpen(false);
       setSnack({ msg: 'Vente enregistrée ✓', type: 'success' });
       await loadData();
-    } catch (err: unknown) {
-      const msg = err instanceof Error && err.message.includes('404')
-        ? 'Workflow vente non activé dans n8n'
-        : 'Erreur lors de la validation';
-      setSnack({ msg, type: 'error' });
+    } catch {
+      setSnack({ msg: 'Erreur lors de la validation', type: 'error' });
     } finally {
       setValidating(false);
     }
