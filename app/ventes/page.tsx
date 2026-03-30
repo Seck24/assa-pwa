@@ -12,6 +12,7 @@ interface Produit {
   uid: string;
   nom: string;
   stock_actuel: number;
+  seuil_alerte?: number;
   prix_vente_defaut: number;
   prix_formule?: number;
   a_formule?: boolean;
@@ -315,7 +316,7 @@ export default function VentesPage() {
               >
                 <span
                   className="absolute top-2 left-2 text-white text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center"
-                  style={{ backgroundColor: '#00A650' }}
+                  style={{ backgroundColor: p.seuil_alerte !== undefined && p.stock_actuel <= p.seuil_alerte ? '#ef4444' : '#00A650' }}
                 >
                   {p.stock_actuel}
                 </span>
