@@ -110,6 +110,11 @@ export default function VentesPage() {
 
   // Handle tap / double-tap
   const handleProduitTap = useCallback((p: Produit) => {
+    if (!serveurActif) {
+      setSnack({ msg: 'Choisir un serveur d\'abord', type: 'warning' });
+      setServeurPicker(true);
+      return;
+    }
     const key = p.uid;
     tapCount.current[key] = (tapCount.current[key] || 0) + 1;
 
@@ -267,7 +272,7 @@ export default function VentesPage() {
           className="w-full bg-assa-green font-bold py-3 px-6 rounded-full flex items-center gap-2 text-base"
         >
           <span className="text-white">👤</span>
-          <span className="text-blue-200 font-bold text-lg">{serveurActif?.nom || 'Choisir un serveur'}</span>
+          <span className={`font-bold text-lg ${serveurActif ? 'text-blue-400' : 'text-white/70'}`}>{serveurActif?.nom || 'Choisir un serveur'}</span>
         </button>
       </div>
 
