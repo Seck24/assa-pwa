@@ -38,6 +38,15 @@ interface Snack {
   type: 'success' | 'error' | 'warning';
 }
 
+interface FactureEnregistree {
+  id: string;
+  serveur_uid: string;
+  nom_serveur: string;
+  items: PanierItem[];
+  total: number;
+  created_at: string;
+}
+
 export default function VentesPage() {
   const router = useRouter();
   const session = getSession();
@@ -59,15 +68,21 @@ export default function VentesPage() {
   const [panierOpen, setPanierOpen] = useState(false);
   const [serveurPicker, setServeurPicker] = useState(false);
   const [factureOpen, setFactureOpen] = useState(false);
+  const [facturesEnrgOpen, setFacturesEnrgOpen] = useState(false);
+  const [facturesEnregistrees, setFacturesEnregistrees] = useState<FactureEnregistree[]>([]);
   const [validating, setValidating] = useState(false);
 
   // Double tap detection
   const tapTimer = useRef<NodeJS.Timeout | null>(null);
   const tapCount = useRef<Record<string, number>>({});
 
+  const storageKey = session ? `assa_factures_${session.user_uid}` : '';
+
   useEffect(() => {
     if (!session) { router.replace('/login'); return; }
     loadData();
+    const saved = localStorage.getItem(storageKey);
+    if (saved) setFacturesEnregistrees(JSON.parse(saved));
   }, []);
 
   const loadData = async () => {
@@ -206,6 +221,39 @@ export default function VentesPage() {
     }
   };
 
+  const mettreEnAttente = () => {
+    if (!serveurActif || panier.length === 0) return;
+    const facture: FactureEnregistree = {
+      id: genererUid(),
+      serveur_uid: serveurActif.uid,
+      nom_serveur: serveurActif.nom,
+      items: panier,
+      total: totalPanier,
+      created_at: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+    };
+    const updated = [...facturesEnregistrees, facture];
+    setFacturesEnregistrees(updated);
+    localStorage.setItem(storageKey, JSON.stringify(updated));
+    setPanier([]);
+    setFactureOpen(false);
+    setSnack({ msg: 'Facture mise en attente ✓', type: 'success' });
+  };
+
+  const reprendreFacture = (f: FactureEnregistree) => {
+    setPanier(f.items);
+    const srv = serveurs.find(s => s.uid === f.serveur_uid);
+    if (srv) setServeurActif(srv);
+    supprimerFactureEnrg(f.id);
+    setFacturesEnrgOpen(false);
+    setFactureOpen(true);
+  };
+
+  const supprimerFactureEnrg = (id: string) => {
+    const updated = facturesEnregistrees.filter(f => f.id !== id);
+    setFacturesEnregistrees(updated);
+    localStorage.setItem(storageKey, JSON.stringify(updated));
+  };
+
   if (!session) return null;
 
   return (
@@ -285,10 +333,13 @@ export default function VentesPage() {
             Service
           </button>
           <button
-            onClick={() => setFactureOpen(true)}
-            className="flex-1 bg-gray-800 text-white font-bold py-3 rounded-2xl text-sm"
+            onClick={() => setFacturesEnrgOpen(true)}
+            className="flex-1 bg-gray-800 text-white font-bold py-3 rounded-2xl text-sm relative"
           >
             Factures Enrg.
+            {facturesEnregistrees.length > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{facturesEnregistrees.length}</span>
+            )}
           </button>
         </div>
         <button
@@ -480,8 +531,8 @@ export default function VentesPage() {
               </div>
             </div>
             <div className="flex gap-3">
-              <button className="flex-1 bg-assa-green text-white font-bold py-3 rounded-xl text-sm">
-                Mettre en attente ?
+              <button onClick={mettreEnAttente} className="flex-1 bg-gray-700 text-white font-bold py-3 rounded-xl text-sm">
+                Mettre en attente
               </button>
               <button
                 onClick={validerPanier}
@@ -512,6 +563,32 @@ export default function VentesPage() {
                 {s.nom}
               </button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Factures Enregistrées modal */}
+      {facturesEnrgOpen && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setFacturesEnrgOpen(false)} />
+          <div className="relative bg-gray-900 rounded-t-3xl p-6 max-h-[80vh] overflow-y-auto">
+            <h2 className="text-white font-bold text-xl text-center mb-4">Factures en attente</h2>
+            {facturesEnregistrees.length === 0 ? (
+              <p className="text-gray-400 text-center py-8">Aucune facture en attente</p>
+            ) : (
+              <div className="space-y-3">
+                {facturesEnregistrees.map(f => (
+                  <div key={f.id} className="bg-gray-800 rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
+                    <button onClick={() => reprendreFacture(f)} className="flex-1 text-left">
+                      <p className="text-blue-300 font-bold text-sm">👤 {f.nom_serveur}</p>
+                      <p className="text-white font-bold">{formatFCFA(f.total)}</p>
+                      <p className="text-gray-500 text-xs">{f.created_at} · {f.items.length} article(s)</p>
+                    </button>
+                    <button onClick={() => supprimerFactureEnrg(f.id)} className="text-red-400 text-xl px-2">🗑️</button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
