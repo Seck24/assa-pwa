@@ -264,6 +264,7 @@ export default function VentesPage() {
 
   return (
     <div className="min-h-screen bg-assa-bg flex flex-col">
+      <style>{`.produit-card:hover { transform: translateY(-2px); }`}</style>
       <Header title="VENTES" />
 
       {/* Serveur pill */}
@@ -311,8 +312,13 @@ export default function VentesPage() {
               <button
                 key={p.uid}
                 onClick={() => handleProduitTap(p)}
-                className="relative bg-assa-card rounded-2xl p-3 aspect-square flex flex-col items-center justify-end border-2 active:scale-95 transition-transform"
-                style={{ borderColor: p.couleur_icone || '#00A650' }}
+                className="produit-card relative rounded-2xl p-3 aspect-square flex flex-col items-center justify-end border-2 active:scale-95"
+                style={{
+                  borderColor: p.couleur_icone || '#00A650',
+                  backgroundColor: p.categorie_boisson === 'Alcool' ? '#0D2B1A' : '#2C1A0E',
+                  boxShadow: '0 8px 16px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3)',
+                  transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+                }}
               >
                 <span
                   className="absolute top-2 left-2 text-white text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center"
