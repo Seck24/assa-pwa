@@ -22,8 +22,15 @@ const securityHeaders = [
   { key: 'X-XSS-Protection', value: '1; mode=block' },
 ];
 
+const SUPABASE_DOCS = 'https://dgbdqrnbkbhdcrijrjue.supabase.co/storage/v1/object/public/assa-docs'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async rewrites() {
+    return [
+      { source: '/docs/:file', destination: `${SUPABASE_DOCS}/:file` },
+    ]
+  },
   async headers() {
     return [
       {
