@@ -43,3 +43,4 @@ const nextConfig = {
 
 export default withPWA(nextConfig);
 
+// PDFs PRINT v2 20260402
