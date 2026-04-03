@@ -6,19 +6,19 @@ import { listRappels } from '@/lib/api';
 import Link from 'next/link';
 
 const menuItems = [
-  { label: 'Ventes',      href: '/ventes',     emoji: '💰', glow: 'rgba(0,230,118,0.15)' },
-  { label: 'Dépenses',    href: '/depenses',   emoji: '💸', glow: 'rgba(255,80,80,0.12)' },
-  { label: 'Stock',       href: '/stock',      emoji: '📦', glow: 'rgba(255,180,0,0.12)' },
-  { label: 'Rappels',     href: '/rappels',    emoji: '🔔', glow: 'rgba(255,220,0,0.12)', badge: true },
-  { label: 'Paramètres',  href: '/parametres', emoji: '⚙️', glow: 'rgba(150,150,255,0.12)' },
-  { label: 'Serveurs',    href: '/serveurs',   emoji: '👥', glow: 'rgba(0,220,255,0.12)' },
+  { label: 'Ventes',      href: '/ventes',     emoji: '💰', badge: false },
+  { label: 'Dépenses',    href: '/depenses',   emoji: '💸', badge: false },
+  { label: 'Stock',       href: '/stock',      emoji: '📦', badge: false },
+  { label: 'Rappels',     href: '/rappels',    emoji: '🔔', badge: true },
+  { label: 'Paramètres',  href: '/parametres', emoji: '⚙️', badge: false },
+  { label: 'Serveurs',    href: '/serveurs',   emoji: '👥', badge: false },
 ];
 
 export default function HomePage() {
   const router = useRouter();
   const [session, setSession] = useState<ReturnType<typeof getSession>>(null);
   const [rappelCount, setRappelCount] = useState(0);
-  const [tip, setTip] = useState('');
+  const tip = '"Créer vos produits dans l\'écran Stock"';
 
   useEffect(() => {
     const s = getSession();
@@ -31,12 +31,6 @@ export default function HomePage() {
       .then(r => setRappelCount(r.rappels?.length || 0))
       .catch(() => {});
 
-    const tips = [
-      '"Créer produit dans écran stock"',
-      '"Double-clic sur un produit pour sortie frigo"',
-      '"Gérer tes serveurs depuis le menu Serveurs"',
-    ];
-    setTip(tips[Math.floor(Math.random() * tips.length)]);
   }, [router]);
 
   if (!session) return null;
@@ -77,8 +71,6 @@ export default function HomePage() {
             className="relative flex flex-col items-start justify-between p-4 active:scale-95 transition-transform overflow-hidden"
             style={{ borderRadius: 20, background: '#1b221b', minHeight: 108 }}
           >
-            {/* Glow */}
-            <div className="absolute top-3 right-3 w-16 h-16 rounded-full pointer-events-none" style={{ background: `radial-gradient(circle, ${item.glow} 0%, transparent 70%)` }} />
             {/* Shimmer */}
             <div className="absolute top-0 left-[8%] right-[8%] h-px pointer-events-none" style={{ background: 'linear-gradient(90deg, transparent, rgba(0,230,118,0.10), transparent)' }} />
             {/* Badge */}
