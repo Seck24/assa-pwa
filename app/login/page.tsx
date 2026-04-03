@@ -34,18 +34,14 @@ export default function LoginPage() {
         return;
       }
 
-      // API returns 'uid' field (not 'user_uid')
       const userUid = res.uid || res.user_uid;
 
-      // check-access is optional — skip if not available
       let accountStatus: 'essai' | 'actif' | 'suspendu' = 'actif';
       let trialDays = 0;
       let blocked = false;
       try {
         const accessRes = await checkAccess(userUid);
-        if (accessRes.access_granted === false) {
-          blocked = true;
-        }
+        if (accessRes.access_granted === false) blocked = true;
         accountStatus = accessRes.account_status || 'actif';
         trialDays = accessRes.trial_remaining_days || 0;
       } catch {
@@ -60,11 +56,8 @@ export default function LoginPage() {
         trial_remaining_days: trialDays,
       });
 
-      if (blocked) {
-        router.replace('/bloque');
-      } else {
-        router.replace('/');
-      }
+      if (blocked) router.replace('/bloque');
+      else router.replace('/');
     } catch {
       setSnack({ msg: 'Identifiants incorrects ou erreur serveur.', type: 'error' });
     } finally {
@@ -73,29 +66,39 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-assa-bg flex flex-col items-center justify-center px-6">
-      {/* Logo */}
+    <div className="min-h-screen flex flex-col items-center justify-center px-6">
+
+      {/* ── Logo ───────────────────────────────────────────────── */}
       <div
-        className="w-24 h-24 rounded-2xl flex items-center justify-center mb-10 relative overflow-hidden"
+        className="relative flex items-center justify-center mb-10"
         style={{
-          background: 'rgba(0, 230, 118, 0.1)',
-          border: '1px solid rgba(0, 230, 118, 0.3)',
-          boxShadow: '0 0 50px rgba(0, 230, 118, 0.15)',
+          width: 96, height: 96, borderRadius: 28,
+          background: 'rgba(0,230,118,0.09)',
+          boxShadow: '0 0 60px rgba(0,230,118,0.20), 0 0 0 1px rgba(0,230,118,0.14)',
         }}
       >
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(145deg, rgba(0,230,118,0.15) 0%, transparent 60%)' }} />
-        <span className="text-assa-green font-bold text-2xl relative z-10">ASSA</span>
+        <div
+          className="absolute inset-0"
+          style={{ borderRadius: 28, background: 'linear-gradient(145deg, rgba(0,230,118,0.18) 0%, transparent 60%)' }}
+        />
+        <span
+          className="relative z-10 font-display font-bold text-3xl"
+          style={{ color: '#00e676', letterSpacing: '0.08em' }}
+        >
+          ASSA
+        </span>
       </div>
 
-      <form onSubmit={handleLogin} className="w-full max-w-sm space-y-4">
+      <form onSubmit={handleLogin} className="w-full max-w-sm flex flex-col gap-3">
+
         {/* Téléphone */}
         <div
-          className="flex rounded-2xl overflow-hidden"
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(0,230,118,0.3)', backdropFilter: 'blur(10px)' }}
+          className="flex overflow-hidden"
+          style={{ borderRadius: 16, background: '#1b221b', border: '1px solid rgba(0,230,118,0.18)' }}
         >
           <div
-            className="flex items-center px-3 text-sm text-white gap-1 whitespace-nowrap"
-            style={{ borderRight: '1px solid rgba(0,230,118,0.2)' }}
+            className="flex items-center px-3 text-sm gap-1 whitespace-nowrap font-body"
+            style={{ borderRight: '1px solid rgba(0,230,118,0.12)', color: '#a8c0a8' }}
           >
             🇨🇮 +225
           </div>
@@ -105,26 +108,29 @@ export default function LoginPage() {
             onChange={e => setTelephone(e.target.value)}
             placeholder="07 00 00 00 00"
             inputMode="numeric"
-            className="flex-1 bg-transparent px-3 py-4 text-white placeholder-white/25 text-sm"
+            className="flex-1 bg-transparent px-3 py-4 text-sm font-body"
+            style={{ color: '#d8e8d8' }}
           />
         </div>
 
         {/* Mot de passe */}
         <div
-          className="flex rounded-2xl overflow-hidden"
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(0,230,118,0.3)', backdropFilter: 'blur(10px)' }}
+          className="flex overflow-hidden"
+          style={{ borderRadius: 16, background: '#1b221b', border: '1px solid rgba(0,230,118,0.18)' }}
         >
           <input
             type={showPwd ? 'text' : 'password'}
             value={password}
             onChange={e => setPassword(e.target.value)}
             placeholder="Mot de passe"
-            className="flex-1 bg-transparent px-4 py-4 text-white placeholder-white/25 text-sm"
+            className="flex-1 bg-transparent px-4 py-4 text-sm font-body"
+            style={{ color: '#d8e8d8' }}
           />
           <button
             type="button"
             onClick={() => setShowPwd(!showPwd)}
-            className="px-4 text-white/40 text-lg"
+            className="px-4 text-lg"
+            style={{ color: '#506850' }}
           >
             {showPwd ? '🙈' : '👁️'}
           </button>
@@ -134,8 +140,13 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-assa-green text-white font-bold py-4 rounded-2xl text-base flex items-center justify-center gap-2 disabled:opacity-70"
-          style={{ color: '#000' }}
+          className="w-full font-display font-bold py-4 text-base flex items-center justify-center gap-2 disabled:opacity-60 transition-all"
+          style={{
+            borderRadius: 9999,
+            background: 'linear-gradient(135deg, #00e676 0%, #00c853 100%)',
+            color: '#002d14',
+            boxShadow: '0 4px 24px rgba(0,230,118,0.30)',
+          }}
         >
           {loading ? <Spinner size="sm" /> : 'Se connecter'}
         </button>

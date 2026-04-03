@@ -19,30 +19,35 @@ export default function Header({ title, showBack = true, backHref }: HeaderProps
     <header
       className="flex items-center justify-between px-4 py-3 sticky top-0 z-40"
       style={{
-        background: 'rgba(13, 20, 32, 0.75)',
+        background: 'rgba(13, 20, 16, 0.82)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(0, 230, 118, 0.15)',
-        boxShadow: '0 1px 20px rgba(0,0,0,0.3)',
+        borderBottom: '1px solid rgba(0, 230, 118, 0.08)',
+        boxShadow: '0 1px 24px rgba(0,0,0,0.35)',
       }}
     >
       <button
         onClick={handleBack}
-        className={`text-assa-green text-2xl font-bold w-8 ${!showBack ? 'invisible' : ''}`}
+        className={`text-2xl font-bold w-8 transition-opacity ${!showBack ? 'invisible' : ''}`}
+        style={{ color: '#00e676' }}
       >
         ←
       </button>
-      <h1 className="text-white font-bold text-lg tracking-wider uppercase flex-1 text-center">
+      <h1
+        className="font-display font-bold text-base tracking-widest uppercase flex-1 text-center"
+        style={{ color: '#d8e8d8' }}
+      >
         {title}
       </h1>
       <div
-        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+        className="w-10 h-10 flex items-center justify-center flex-shrink-0"
         style={{
-          background: 'rgba(0, 230, 118, 0.12)',
-          border: '1px solid rgba(0, 230, 118, 0.3)',
+          borderRadius: 12,
+          background: 'rgba(0, 230, 118, 0.10)',
+          border: '1px solid rgba(0, 230, 118, 0.16)',
         }}
       >
-        <span className="text-assa-green font-bold text-xs leading-none">ASSA</span>
+        <span className="font-display font-bold text-xs leading-none" style={{ color: '#00e676' }}>ASSA</span>
       </div>
     </header>
   );

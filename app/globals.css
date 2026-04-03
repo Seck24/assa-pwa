@@ -1,10 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --assa-bg: #0d1420;
+  --assa-bg: #0d1410;
   --assa-green: #00e676;
+  --surface-low: #141a14;
+  --surface-mid: #1b221b;
+  --surface-high: #252e25;
+  --surface-highest: #303930;
+  --on-surface: #d8e8d8;
+  --on-surface-var: #a8c0a8;
 }
 
 * {
@@ -13,40 +21,41 @@
 }
 
 html, body {
-  background-color: #0d1420;
+  background-color: #0d1410;
   background-image:
-    radial-gradient(ellipse at 20% 20%, rgba(0, 230, 118, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 80%, rgba(80, 40, 180, 0.08) 0%, transparent 50%),
-    linear-gradient(145deg, #0d1420 0%, #111830 50%, #0d1420 100%);
+    radial-gradient(ellipse at 15% 10%, rgba(0, 230, 118, 0.07) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 85%, rgba(0, 180, 80, 0.04) 0%, transparent 45%),
+    linear-gradient(160deg, #0d1410 0%, #101610 50%, #0d1410 100%);
   background-attachment: fixed;
-  color: white;
-  font-family: Arial, Helvetica, sans-serif;
+  color: #d8e8d8;
+  font-family: 'Inter', sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-/* Custom scrollbar */
+/* Scrollbar */
 ::-webkit-scrollbar { width: 0; }
 
-/* Touch interactions */
+/* Touch */
 button, a { cursor: pointer; }
+input:focus, select:focus, textarea:focus { outline: none; }
 
-/* Input focus */
-input:focus, select:focus, textarea:focus {
-  outline: none;
-}
+/* Safe area */
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
 
-/* Safe area for mobile */
-.safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
+/* ── Surface layers (no borders — use tonal depth) ─────────────── */
+.surface        { background: #0d1410; }
+.surface-low    { background: #141a14; }
+.surface-mid    { background: #1b221b; }
+.surface-high   { background: #252e25; }
+.surface-highest{ background: #303930; }
 
-/* Glass card utility */
+/* ── Glass card ─────────────────────────────────────────────────── */
 .glass-card {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(0, 230, 118, 0.06);
   position: relative;
 }
 .glass-card::before {
@@ -54,55 +63,88 @@ input:focus, select:focus, textarea:focus {
   position: absolute;
   top: 0; left: 10%; right: 10%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  background: linear-gradient(90deg, transparent, rgba(0,230,118,0.10), transparent);
   pointer-events: none;
+  border-radius: 1px;
 }
 
-/* Glass input */
+/* ── Glass input ────────────────────────────────────────────────── */
 .glass-input {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(0, 230, 118, 0.3);
+  background: var(--surface-mid);
+  border: 1px solid rgba(0, 230, 118, 0.2);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* Upgrade gray cards to glass across all pages */
+/* ── Floating card (glassmorphism) ─────────────────────────────── */
+.float-card {
+  background: rgba(37, 46, 37, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 230, 118, 0.08);
+}
+
+/* ── Green glow on primary ──────────────────────────────────────── */
+.btn-primary {
+  background: linear-gradient(135deg, #00e676 0%, #00c853 100%);
+  box-shadow: 0 4px 24px rgba(0, 230, 118, 0.30), 0 1px 4px rgba(0,0,0,0.3);
+  color: #002d14;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  border-radius: 9999px;
+}
+.btn-primary:active {
+  box-shadow: 0 2px 12px rgba(0, 230, 118, 0.20);
+  transform: scale(0.98);
+}
+
+/* ── Ghost border fallback (accessibility) ──────────────────────── */
+.ghost-border {
+  border: 1px solid rgba(0, 230, 118, 0.15);
+}
+
+/* ── Ambient shadow (floating elements) ────────────────────────── */
+.ambient-shadow {
+  box-shadow: 0 20px 40px rgba(0, 230, 118, 0.06), 0 4px 16px rgba(0,0,0,0.4);
+}
+
+/* ── Legacy overrides for pages not yet redesigned ─────────────── */
 .bg-gray-900 {
-  background: rgba(255, 255, 255, 0.04) !important;
+  background: var(--surface-mid) !important;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-color: rgba(255, 255, 255, 0.07) !important;
 }
 .bg-gray-800 {
-  background: rgba(255, 255, 255, 0.07) !important;
+  background: var(--surface-high) !important;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
 .bg-gray-700 {
-  background: rgba(255, 255, 255, 0.10) !important;
+  background: var(--surface-highest) !important;
 }
-.border-gray-800 {
-  border-color: rgba(255, 255, 255, 0.07) !important;
-}
-.border-gray-700 {
-  border-color: rgba(255, 255, 255, 0.10) !important;
-}
+.border-gray-800 { border-color: rgba(0, 230, 118, 0.08) !important; }
+.border-gray-700 { border-color: rgba(0, 230, 118, 0.12) !important; }
 
-/* Green glow on primary buttons */
+/* ── bg-assa-green legacy ───────────────────────────────────────── */
 .bg-assa-green {
-  box-shadow: 0 4px 20px rgba(0, 230, 118, 0.25);
+  background: linear-gradient(135deg, #00e676 0%, #00c853 100%);
+  box-shadow: 0 4px 20px rgba(0, 230, 118, 0.28);
 }
-.bg-assa-green:active {
-  box-shadow: 0 2px 10px rgba(0, 230, 118, 0.2);
-}
+.bg-assa-green:active { box-shadow: 0 2px 10px rgba(0, 230, 118, 0.18); }
 
-/* Shimmer top edge on cards */
+/* ── Shimmer top ────────────────────────────────────────────────── */
 .shimmer-top::before {
   content: '';
   position: absolute;
   top: 0; left: 8%; right: 8%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  background: linear-gradient(90deg, transparent, rgba(0,230,118,0.12), transparent);
   pointer-events: none;
   border-radius: 1px;
 }
+
+/* ── Typography helpers ─────────────────────────────────────────── */
+.font-display { font-family: 'Plus Jakarta Sans', sans-serif; }
+.font-body    { font-family: 'Inter', sans-serif; }
+.text-on-surface     { color: #d8e8d8; }
+.text-on-surface-var { color: #a8c0a8; }
